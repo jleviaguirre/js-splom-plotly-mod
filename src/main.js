@@ -6,11 +6,14 @@
 
 //@ts-check - Get type warnings from the TypeScript language server. Remove if not wanted.
 
-import * as d3 from "d3";
-
+//these two imports are for dev and hard coded stuff
+import * as d3 from "d3";  
 import {irisCSVData} from "./irisData";
+
 import {plotlySplom} from "./splom.plotly";
-import {plotlyParser} from "./plotlyParser";
+import {plotlyParser} from "./plotlyParser"; 
+import {plotlyGUI} from "./plotlyGUI"; 
+
 
 /**
  * Get access to the Spotfire Mod API by providing a callback to the initialize method.
@@ -20,7 +23,7 @@ Spotfire.initialize(async (mod) => {
     /**
      * Create the read function.
      */
-    const reader = mod.createReader(mod.visualization.data(), mod.windowSize(), mod.property("myProperty"));
+    const reader = mod.createReader(mod.visualization.data(), mod.windowSize(), mod.property("plotlySettings"));
 
     /**
      * Store the context.
@@ -56,7 +59,7 @@ Spotfire.initialize(async (mod) => {
             mod.controls.errorOverlay.show(errors);
             return;
         }
-        mod.controls.errorOverlay.hide();
+        // mod.controls.errorOverlay.hide();
         // console.clear();
         
         
@@ -72,12 +75,37 @@ Spotfire.initialize(async (mod) => {
         //first level must be rowid. Example:
         //<baserowid() NEST [measure1] NEST [measure2] NEST [measure3] NEST [measureN]>
         const parsedData = await plotlyParser.data(dataView);
-
+        
         //or use demo data from irisCSVData
-        // const rows = d3.csvParse(irisCSVData);
+        parsedData.rows = d3.csvParse(irisCSVData);
 
         //get layout options
         let layout = await plotlyParser.layout(dataView, parsedData.rows)
+
+
+       //default preferences
+       let preferences = {
+        isUpperHalfVisible:false,
+        isDiagonalVisible:false,
+        showAxisLines:!true,
+        gridLinesColor:"blue",
+        marker:{
+            color:"white", 
+            size:5,
+            width:0.5
+        },
+        plot_bgcolor:'#decaca'
+       } 
+
+       //read plot settings from mod property
+       let plotlySettings = JSON.parse((await mod.property("plotlySettings")).value());
+
+       //if mod property not set, set defaults
+       if (plotlySettings=="-") (await mod.property("plotlySettings")).set(JSON.stringify(preferences))
+
+       //read mod property
+       preferences = JSON.parse((await mod.property("plotlySettings")).value());
+
 
         plotlySplom(parsedData.rows, {
             colorScale:parsedData.colorScale,
@@ -88,18 +116,15 @@ Spotfire.initialize(async (mod) => {
             paper_bgcolor:context.styling.general.backgroundColor,
             plot_bgcolor:context.styling.general.backgroundColor,
             dimensions:layout.dimentions,
-            axes:layout.axes
-        });
+            axes:layout.axes,
+            ...preferences
+        },preferences);
 
 
-        plotlyParser.addTooltips(mod);
+        //tooltips and gui stuff
+        plotlyGUI.setTooltips(mod);
+        plotlyGUI.setConfiguration(mod,preferences);
 
-        plotlyParser.addModConfigButton();
-
-        
-
-
-        
 
         /**
          * Signal that the mod is ready for export.

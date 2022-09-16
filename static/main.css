@@ -4,13 +4,13 @@
 * in the license file that is distributed with this file.
 */
 
-body{
+body{ 
     margin: 0;
     overflow: hidden;
 }
 
 #mod-container {
-    white-space: pre;
+    white-space: pre;  
 }
 
 #btnModConfig svg{
@@ -19,4 +19,89 @@ body{
 
 #btnModConfig svg:hover{
     fill:rgba(68, 68, 68, 0.7)
+}
+
+
+
+/* change plotly look and feel (marking rectangle) */
+.selectionlayer{display: none;}
+
+rect.cursor-ew-resize,rect.cursor-ns-resize  {display: none;}
+
+
+
+/* configuration dialog */
+#form .btn:focus{outline:none;border:none;box-shadow: none;}
+
+#form{margin:1em;}
+.fas.fa-caret-right::after{content: "▷";} /*➕*/
+.fas.fa-caret-down::after{content: "▽";} /*➖*/
+.fas.fa-caret-right,.fas.fa-caret-down{
+    font-style: normal;
+	font-size:15px;
+}
+[type=button][title=Expand],[type=button][title=Collapse] {
+    cursor: pointer;
+    border-radius: 25px;
+    height: 25px;
+    width: 25px;
+    padding: 0;	
+    font-style:bolder;
+}
+
+#form {
+    background-color: #ececec;
+    border: 1px solid #b9b9b9;
+    width: 300px;
+    position: fixed;
+    right: 0px;
+    top: -15px;
+    z-index: 10;
+    overflow-y: auto;
+    overflow-x: hidden;
+    box-shadow: #d7d7d7 2px 5px 10px 0px;
+    padding: 0 1em 1em 1em;
+}
+.fromCloseBtn {
+    position: absolute;
+    right: 15px;
+    margin: 10px;
+    cursor: pointer;
+    z-index: 30;
+}
+
+/* tabs */
+[role="presentation"] {
+    padding: 0px 5px 0px 5px;
+    background: #e1e1e1;
+    border: 1px outset darkgray;
+    margin: -1px;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    font-size: 15px;
+}
+[role="presentation"]:hover {
+    background: #c0c0c0;
+}
+
+[role="presentation"] a:hover {
+    text-decoration: none;
+}
+[role="presentation"] a {
+    color:gray;
+}
+[role="presentation"].active a {
+    color:black;
+    font-weight: bold;
+}
+
+
+[role="presentation"].active {
+    background:#f9f9f9;
+}
+
+#form h3{display: none;}
+
+#form .tab-pane{
+    padding: 1em;
 }

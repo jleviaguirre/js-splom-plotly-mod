@@ -4,13 +4,18 @@
     "name": "Mod Plotly Splom",
     "id": "js-plotly-splom", 
     "icon": "icon.svg",
-    "properties": [
+    "properties": [  
         {
-            "name": "myProperty",
+            "name": "plotlySettings",
             "type": "string",
-            "defaultValue": "myValue"
+            "defaultValue": "-"
+        },
+        {
+            "name": "editorSettings",
+            "type": "string",
+            "defaultValue": "-"
         }
-    ],
+    ],    
     "dataViewDefinition": {
         "colorAxis": {
             "mode": "dual",
@@ -31,7 +36,7 @@
             },
             {
                 "name": "Y",
-                "mode": "continuous",
+                "mode": "continuous", 
                 "placement": "left"
             }
         ]
@@ -39,6 +44,7 @@
     "files": [
         "index.html",
         "main.css",
-        "bundle.js"
+        // "bundle.js",
+        "bootstrap.4.1.2.css"
     ]
 }
