@@ -9,7 +9,7 @@ export const plotlyParser = {
                 //get Color axis
                 let colorAxis = (await dataView.axes()).filter(ax=>{return ax.name=="Color"})[0];
 
-                console.log(colorAxis.length);
+               //console.log(colorAxis.length);
 
                 
                 // get row values
@@ -28,9 +28,9 @@ export const plotlyParser = {
 
                 let outputData=[];
                 let colors=[]
-                let colorScale=[];
+                let colorDict = {};
 
-                const xHierarchy = await dataView.hierarchy("X");
+                const xHierarchy = await dataView.hierarchy("Dimensions");
                 const cols =  xHierarchy.levels.map(x=>{return x.name} )
                 cols.shift(); //removes the rowid
                 cols.push("class");//adds color
@@ -39,9 +39,6 @@ export const plotlyParser = {
                 var i=0;
                 const dataViewAxes = await dataView.axes()
                 next(root, "");
-
-                //check if color axis has something
-                //const colorAxis = await mod.visualization.axis("Color");
 
         
                 //traverse the hierarchy
@@ -52,15 +49,17 @@ export const plotlyParser = {
                                 let aRow={}
                                 node.rows().forEach( (row,k) => {
 
-                                        //colors and colorScale
+                                        //add index
+                                        aRow["index"] = i
+
+                                        //colors and colorScaleDict
                                         let hex = row.color().hexCode
                                         let val = i++/rowCount;
-                                        colorScale.push([val,hex]);
-                                        colors.push(val);
-                                        console.log(k,rowCount,val)
+                                        colorDict[hex]=0;
+                                        colors.push(hex);
 
                                         //data
-                                        let r = row.categorical("X").formattedValue("|").split("|") 
+                                        let r = row.categorical("Dimensions").formattedValue("|").split("|") 
                                         if(dataViewAxes.find(anAxis=>anAxis.name=="Color")) r.push(row.categorical("Color").formattedValue()); //add color
                                         r.shift() //remove the rowid from the parsed data
                                         r.forEach((v,i)=>{
@@ -71,24 +70,31 @@ export const plotlyParser = {
                         }
                 }
                 
-                colorScale.push([1,colorScale[colorScale.length-1][1]])
+                const colDict=Object.keys(colorDict);
+                let colorScale=[];
+                colDict.forEach((x,i)=>{colorScale.push([(1/colDict.length)*i,x]);colorScale.push([(1/colDict.length)*(i+1),x])});
+                
+                colors = colors.map((x,i)=>{return colDict.indexOf(x)/(colDict.length-1)});
+
+                
+                console.log(colDict,colorScale);
                 return ({rows:outputData,colors:colors,colorScale:colorScale})
         },
 
         layout:async function(dataView,rows){
 
                 //dimensions
-                const xHierarchy = await dataView.hierarchy("X");
+                const xHierarchy = await dataView.hierarchy("Dimensions");
                 const cols =  xHierarchy.levels.map(x=>{return x.name} )
                 const dimentions =  cols.map(x=>{return {label:x, values:unpack(rows,x)}})
                 dimentions.shift()
 
                 //axes
                 let axes = {}
-                dimentions.forEach((e,i)=>{axes["xaxis"+(i==0?"":i)] = axis();axes["yaxis"+(i==0?"":i)] = axis()})
+                dimentions.forEach((e,i)=>{axes["xaxis"+(i==0?"":i+1)] = axis();axes["yaxis"+(i==0?"":i+1)] = axis()})
 
                 return {dimentions:dimentions, axes:axes}
-        }
+        } 
 
 }
 

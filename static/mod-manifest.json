@@ -9,16 +9,11 @@
             "name": "plotlySettings",
             "type": "string",
             "defaultValue": "-"
-        },
-        {
-            "name": "editorSettings",
-            "type": "string",
-            "defaultValue": "-"
         }
     ],    
     "dataViewDefinition": {
         "colorAxis": {
-            "mode": "dual",
+            "mode": "categorical",
             "dropTarget": {
                 "icon": "Color",
                 "description": "Color by {0}"
@@ -26,25 +21,21 @@
         },
         "axes": [
             {
-                "name": "X",
+                "name": "Dimensions",
                 "mode": "dual",
-                "placement": "bottom",
+                "placement":"none" ,
                 "dropTarget": {
                     "icon": "XAxis3D",
                     "description": "Use {0} on the mod's X-axis"
                 }
-            },
-            {
-                "name": "Y",
-                "mode": "continuous", 
-                "placement": "left"
             }
         ]
     },
     "files": [
         "index.html",
         "main.css",
-        // "bundle.js",
-        "bootstrap.4.1.2.css"
+        "bundle.js",
+        "bootstrap.4.1.2.css",
+        "select_columns.png"
     ]
 }

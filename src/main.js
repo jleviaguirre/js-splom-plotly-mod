@@ -46,10 +46,10 @@ Spotfire.initialize(async (mod) => {
         let errors = await dataView.getErrors();
 
         //if nothing is selected for x axis Hierarchy, show error
-        let xAxis = await mod.visualization.axis("X")
+        let xAxis = await mod.visualization.axis("Dimensions")
         // if(!xAxis.parts.length) errors.push("Please add a hierarchy to the X Axis. First node should be (Row Number)")
 
-        //if first node is not row number, show error
+        //if first node is not row number, show warning
         document.getElementById("warning").hidden = !(xAxis.parts.length>0 && xAxis.parts[0].expression != "baserowid()")
         
         if (errors.length > 0) {
@@ -62,9 +62,8 @@ Spotfire.initialize(async (mod) => {
         // mod.controls.errorOverlay.hide();
         // console.clear();
         
-        
 
-        const xHierarchy = await dataView.hierarchy("X");
+        const xHierarchy = await dataView.hierarchy("Dimensions");
         const xRoot = await xHierarchy.root();
         
 
@@ -74,39 +73,55 @@ Spotfire.initialize(async (mod) => {
         //plotlyParser parses the hierarchy from X axis containing continous measures. 
         //first level must be rowid. Example:
         //<baserowid() NEST [measure1] NEST [measure2] NEST [measure3] NEST [measureN]>
-        const parsedData = await plotlyParser.data(dataView);
+        let start = new Date();
+        const parsedData = await plotlyParser.data(dataView).then((theParsedData)=>{
+            //console.log("parsing took ", ((new Date()) - start)/1000," seconds");
+            return theParsedData;
+        });
         
         //or use demo data from irisCSVData
-        parsedData.rows = d3.csvParse(irisCSVData);
+        // parsedData.rows = d3.csvParse(irisCSVData);
 
         //get layout options
         let layout = await plotlyParser.layout(dataView, parsedData.rows)
 
 
-       //default preferences
-       let preferences = {
-        isUpperHalfVisible:false,
-        isDiagonalVisible:false,
-        showAxisLines:!true,
-        gridLinesColor:"blue",
-        marker:{
-            color:"white", 
-            size:5,
-            width:0.5
-        },
-        plot_bgcolor:'#decaca'
-       } 
+       //default popout / plottly preferences 
+       let defaultPreferences = {
+        "isUpperHalfVisible": false,
+        "isDiagonalVisible": false,
+        "showAxisLines": false,
+        "gridLinesColor": "#f5f5f5",
+        "plot_bgcolor": "#ffffff",
+        "marker": {
+            "size": 8,
+            "color": "#000000",
+            "width": 0.5
+            }
+        } 
+
 
        //read plot settings from mod property
-       let plotlySettings = JSON.parse((await mod.property("plotlySettings")).value());
-
+       let plotlySettingsValue = (await mod.property("plotlySettings")).value();
+       
        //if mod property not set, set defaults
-       if (plotlySettings=="-") (await mod.property("plotlySettings")).set(JSON.stringify(preferences))
+       if (plotlySettingsValue=="-") (await mod.property("plotlySettings")).set(JSON.stringify(defaultPreferences));
 
+       let plotlySettings = JSON.parse((await mod.property("plotlySettings")).value());
        //read mod property
-       preferences = JSON.parse((await mod.property("plotlySettings")).value());
+       let preferences = plotlySettings;
 
 
+
+ 
+ 
+
+ 
+
+       //measure performance
+       start = new Date();
+
+       //parse data
         plotlySplom(parsedData.rows, {
             colorScale:parsedData.colorScale,
             colors:parsedData.colors,
@@ -119,11 +134,17 @@ Spotfire.initialize(async (mod) => {
             axes:layout.axes,
             ...preferences
         },preferences);
+        //end parsing data and measuring performance
+        //console.log("rendering took ", ((new Date()) - start)/1000," seconds");
 
 
         //tooltips and gui stuff
         plotlyGUI.setTooltips(mod);
         plotlyGUI.setConfiguration(mod,preferences);
+
+        //enable marking
+        plotlyGUI.setMarking(dataView,parsedData.rows);
+
 
 
         /**
