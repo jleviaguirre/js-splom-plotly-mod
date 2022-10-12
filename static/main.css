@@ -9,10 +9,6 @@ body{
     overflow: hidden;
 }
 
-#mod-container {
-    white-space: pre;  
-}
-
 .configIcon {
     fill:rgba(68, 68, 68, 0.3)
 }
@@ -62,9 +58,10 @@ padding: 0 1em 1em 1em; */
     border-bottom-color: #D8D9DC;
     border-left-color: #D8D9DC;
     background-color: #FFFFFF;
-    padding-left:50px;
-
+    padding-left: 40px;
+    padding-right: 25px;
 }
+
 .fromCloseBtn {
     position: absolute;
     right: 15px;
@@ -80,6 +77,23 @@ padding: 0 1em 1em 1em; */
     margin-left:-30px;
 }
 
+#form h3 label{    font-weight: bold;}
+
+
+#form h3 label{ display:none;}
+
+#form [role='tablist'] {
+    justify-content:space-evenly;
+    width: 250px;
+}
+#form #Plot .row:first-child {
+    margin-top  :20px;
+}
+
+#form .nav.nav-tabs .active{
+    font-weight: bold;
+    border-bottom:1px solid gray;
+}
 
 .RoundedDropShadow {
     box-shadow: 0 3px 11px 0 rgba(0,0,0,.16),0 3px 6px 0 rgba(0,0,0,.16);
@@ -139,6 +153,12 @@ padding: 0 1em 1em 1em; */
     display: grid;
     padding: 10px;
     border: 1px solid gray;
+}
+
+
+.infolayer g{
+    transform-box: fill-box;
+    transform-origin: right;
 }
 
 

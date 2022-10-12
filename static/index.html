@@ -18,17 +18,9 @@
     </head> 
     <body> 
 
-
-        <div hidden id="warning" style="position:fixed;cursor:help;z-index: 10;">⚠️ </div>
-        <div hidden id="warningDialog">
-            <span>
-            ⚠️ Add the row number as the first node of the Dimension axis to ensure data integrity<br>
-            or use the custom expression format:<br><br>
-            <pre>&lt;baserowid() NEST [col_1] NEST [col_2] ... NEST [col_N]></pre>
-            <img style="justify-self:center" src="select_columns.png"></img> 
-            </span>
-        </div>
-
+        <div id="testpopout" hidden>click here to test popout</div>
+        <div id="mod-container"><div id="plotyly_plot"></div><style id="mod-container-style"></style></div>
+        
         <div id="configDialog" hidden> 
             <span onclick="document.getElementById('configDialog').hidden = true" class="fromCloseBtn">
                 <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 16 16" enable-background="new 0 0 16 16" xml:space="preserve" class="closeSvg" style="width: 16px; height: 16px;"><g id="Lager_1"><g><g>
@@ -37,10 +29,7 @@
                 </svg>
             </span>
             <div id="form" class="dialog RoundedDropShadow"></div> 
-        </div>
-
-        <div id="mod-container"><div id="plotyly_plot"></div></div>
-
+        </div> 
 
 
 

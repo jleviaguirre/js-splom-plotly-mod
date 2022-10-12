@@ -8,8 +8,8 @@
         "build-watch": "webpack --watch",
         "start": "npm run build-watch"
     },
-    "keywords": [],
-    "author": "",
+    "keywords": ["scatter plot", "spom chart", "scatter matrix", "correlation", "data science", "analytics", "visualization", "plotly"],
+    "author": "Jose Leviaguirre",
     "license": "ISC",
     "devDependencies": {
         "@tibco/spotfire-mods-dev-server": "^1.0.1",

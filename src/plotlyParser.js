@@ -1,6 +1,13 @@
 let unpack = (rows, key) => { return rows.map(function(row) { return row[key.replace('.',' ')]; });}
-let axis = () => {return {showline:false,zeroline:false,gridcolor:'#ffff',ticklen:4}}
-    
+let axis = (preferences) => {
+        return {
+        showline:preferences.showAxisLines,
+        zeroline:false,
+        gridcolor:preferences.gridLinesColor,
+        ticklen:4
+        // tickangle:45
+}}
+
 
 export const plotlyParser = {
         //returns [[1.2,"#F0A62D"],[2.5,"#FF5FA0"]] if color is coninuous or [["A","#F0A62D"],["B","#FF5FA0"]]
@@ -69,19 +76,21 @@ export const plotlyParser = {
                                 })
                         }
                 }
-                
-                const colDict=Object.keys(colorDict);
-                let colorScale=[];
-                colDict.forEach((x,i)=>{colorScale.push([(1/colDict.length)*i,x]);colorScale.push([(1/colDict.length)*(i+1),x])});
-                
-                colors = colors.map((x,i)=>{return colDict.indexOf(x)/(colDict.length-1)});
 
+
+                // console.log(colorDict)
+                colorDict=Object.keys(colorDict);
+                let colorScale=[];
+                colorDict.forEach((x,i)=>{colorScale.push([(1/colorDict.length)*i,x]);colorScale.push([(1/colorDict.length)*(i+1),x])});
+
+                if(colorDict.length==1) colorDict = [...colorDict,...colorDict];
                 
-                console.log(colDict,colorScale);
+                colors = colors.map((x,i)=>{return colorDict.indexOf(x)/(colorDict.length-1)});
+
                 return ({rows:outputData,colors:colors,colorScale:colorScale})
         },
 
-        layout:async function(dataView,rows){
+        layout:async function(dataView,rows,preferences){
 
                 //dimensions
                 const xHierarchy = await dataView.hierarchy("Dimensions");
@@ -91,7 +100,11 @@ export const plotlyParser = {
 
                 //axes
                 let axes = {}
-                dimentions.forEach((e,i)=>{axes["xaxis"+(i==0?"":i+1)] = axis();axes["yaxis"+(i==0?"":i+1)] = axis()})
+        
+                dimentions.forEach((e,i)=>{
+                        axes["xaxis"+(i==0?"":i+1)] = axis(preferences);
+                        axes["yaxis"+(i==0?"":i+1)] = axis(preferences)
+                })
 
                 return {dimentions:dimentions, axes:axes}
         } 
