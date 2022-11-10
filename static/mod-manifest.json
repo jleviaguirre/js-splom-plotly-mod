@@ -1,7 +1,7 @@
 {
     "apiVersion": "1.3",
-    "version": "1.0",
-    "name": "Mod Splom",
+    "version": "1.0.0",
+    "name": "Scatter Plot Matrix",
     "id": "tibco-mods-splom", 
     "icon": "icon.svg",
     "properties": [  
@@ -14,6 +14,11 @@
             "name": "lastSelectedTabIndex",
             "type": "integer",
             "defaultValue": 0
+        },
+        {
+            "name": "useCustomRowIdentifierExpression",
+            "type": "boolean",
+            "defaultValue": false
         }
     ],    
     "dataViewDefinition": {
@@ -26,12 +31,12 @@
         },
         "axes": [
             {
-                "name": "Dimensions",
+                "name": "Measures",
                 "mode": "dual",
-                "placement":"none" ,
+                "placement":"bottom" ,  
                 "dropTarget": {
                     "icon": "XAxis3D",
-                    "description": "Use {0} on the mod's X-axis"
+                    "description": "Use {0} for the mod's measures"
                 }
             }
         ]
@@ -41,6 +46,5 @@
         "main.css",
         "bundle.js",
         "bootstrap.4.1.2.css",
-        "select_columns.png"
-    ]
+        "select_columns.png"    ]
 }

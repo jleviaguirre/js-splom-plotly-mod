@@ -14,21 +14,24 @@ import {plotlySplom} from "./splom.plotly";
 import {plotlyParser} from "./plotlyParser"; 
 import {plotlyGUI} from "./plotlyGUI"; 
 
+ 
 
 /**
  * Get access to the Spotfire Mod API by providing a callback to the initialize method.
  * @param {Spotfire.Mod} mod - mod api!
  */
 Spotfire.initialize(async (mod) => {
-    /**
-     * Create the read function.
-     */
-    const reader = mod.createReader(mod.visualization.data(), mod.windowSize(), mod.property("plotlySettings"));
 
-    /**
-     * Store the context.
-     */
+console.clear();
+
+    const reader = mod.createReader(
+        mod.visualization.data(), 
+        mod.property("useCustomRowIdentifierExpression"),
+        mod.property("plotlySettings"),
+        mod.windowSize()
+    );
     const context = mod.getRenderContext();
+    const modDiv = document.getElementById("mod-container");
 
     /**
      * Initiate the read loop
@@ -37,103 +40,113 @@ Spotfire.initialize(async (mod) => {
 
     /**
      * @param {Spotfire.DataView} dataView
+     * @param {Spotfire.ModProperty<boolean>} useCustomRowIdentifierExpression
+     * @param {Spotfire.ModProperty<string>} plotlySettings
      * @param {Spotfire.Size} windowSize
-     * @param {Spotfire.ModProperty<string>} prop
      */
-    async function render(dataView, windowSize, prop) {
+    async function render(dataView, useCustomRowIdentifierExpression,plotlySettings, windowSize) {
 
-        //error handling starts here
-        let errors = await dataView.getErrors();
-
-        //if nothing is selected for x axis Hierarchy, show error
-        let xAxis = await mod.visualization.axis("Dimensions")
-        // if(!xAxis.parts.length) errors.push("Please add a hierarchy to the X Axis. First node should be (Row Number)")
-
-        if (errors.length > 0) {
-            // Showing an error overlay will hide the mod iframe.
-            // Clear the mod content here to avoid flickering effect of
-            // an old configuration when next valid data view is received.
-            mod.controls.errorOverlay.show(errors);
-            return;
-        }
-        mod.controls.errorOverlay.hide(); 
-        //  console.clear();
-
-        
        //1. get default or saved preferences
-       //default popout / plottly preferences 
+       //default popout / plottly preferences for new visual instance
        //note! when adding new properties, make sure 1.b runs during development at least once to reset mod.property.plotlySettings
        let defaultPreferences = {
         isUpperHalfVisible: !true,
-        isDiagonalVisible: !true,
-        showAxisLines: false,
-        gridLinesColor: "#f5f5f5",
-        plot_bgcolor: "#ffffff",
+        isDiagonalVisible: true,
+        showAxisLines: true, 
+        showGridlines:false,
+        gridLinesColor: context.styling.general.backgroundColor,
+        plot_bgcolor: context.styling.general.backgroundColor,
         marker: {
-            "size": 8,
-            "color": "#000000",
-            "width": 0.5
+            size: 8,
+            color: "#000000",
+            width: 0.5
         },
         labels:{
-            fontSize:12,
-            xLabelRotation:11,
-            yLabelRotation:11
+            fontSize:context.styling.scales.font.fontSize,
+            xLabelRotation:0,
+            yLabelRotation:0
         }
-       } 
+       }  
+
 
        //1.a read plot settings from mod property
        let plotlySettingsValue = (await mod.property("plotlySettings")).value();
        
-       //1.b if mod property not set, set defaults (set true to reset mod property to default )
+       //1.b if mod property not set, set defaults (set ovveride to true just once to reset mod property to default)
        let override = !true;
        if (override||plotlySettingsValue=="-") (await mod.property("plotlySettings")).set(JSON.stringify(defaultPreferences)); 
 
        //1.c read mod property
-       let plotlySettings = JSON.parse((await mod.property("plotlySettings")).value());
-       let preferences = plotlySettings;
+       plotlySettingsValue = (await mod.property("plotlySettings")).value();
+       let preferences = JSON.parse(plotlySettingsValue.toString());
+
+       //1.d reset aggregation warning message
+       if(override) useCustomRowIdentifierExpression.set(false)
 
 
-        //check for plot requirements (check for errors)
-        // console.log(xAxis.parts);
-        if (xAxis.parts.length<2) {
-            mod.controls.errorOverlay.show("Please select at least two columns for Dimensions axis");
+        //2. Add style according to canvas stylyng theme (dark or light) for errors and everything else
+        plotlyGUI.setStyle(context);
+
+        //3. Check for plot requirements (check for errors) 
+        //3.1 Error handling starts here
+        let errors = await dataView.getErrors(); 
+
+        //3.2 check if ID is empty
+        let measureAxis = await mod.visualization.axis("Measures"); 
+        if (measureAxis.parts.length==0 || measureAxis.parts[0].expression !== "baserowid()" && !useCustomRowIdentifierExpression.value()) {
+            plotlyGUI.createWarning(modDiv, context.styling.general.font.color, measureAxis, useCustomRowIdentifierExpression);
+            mod.controls.errorOverlay.hide();
+            return;
+        } else { 
+            plotlyGUI.clearWarning(modDiv);
+        }
+
+        //3.3 check if measures is empty (requires at least two measures)
+        if (measureAxis.parts.length<2) {
+            mod.controls.errorOverlay.show("Please select at least two columns for the Measures axis");
             return;
         };
-        if (xAxis.parts[0].expression!="baserowid()") {
-            mod.controls.errorOverlay.show("Please select (Row Number) as the first column for the Dimensions axis");
-            return;
-        }
-        if (!preferences.isDiagonalVisible && xAxis.parts.length<4 )  {
-            mod.controls.errorOverlay.show("If Diagonal plots are turned off, you need at least 3 columns for the Dimensions axis in addition to the (Row Number) column");
+
+
+        // 3.4 check if diagonals are off, then you need more columns 
+        if (!preferences.isDiagonalVisible && measureAxis.parts.length<4 )  {
+            mod.controls.errorOverlay.show("If Diagonal plots are turned off, you need at least 3 columns for the Measures axis in addition to the (Row Number) column");
             return;
         }
 
-        mod.controls.errorOverlay.hide();
+        //2.4 check additional errors
+        if (errors.length > 0) {
+            mod.controls.errorOverlay.show(errors);
+            return;
+        }
 
-        //get data from spotfire
-        //plotlyParser parses the hierarchy from X axis containing continous measures. 
-        //first level must be rowid. Example:
-        //<baserowid() NEST [measure1] NEST [measure2] NEST [measure3] NEST [measureN]>
-        let start = new Date();
+        //2.5 no errors, then continue
+        mod.controls.errorOverlay.hide(); 
+        //3. Get data from spotfire /* FIXXXXXXXXXXXXXXXXXX plotlyParser xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx*/
+        //plotlyParser parses the hierarchy from X axis containing continous nested measures. 
+        //[measure1] NEST [measure2] NEST [measure3] ... NEST [measureN]>
+
+        //let start = new Date(); //for data parsing benchmark
         const parsedData = await plotlyParser.data(dataView).then((theParsedData)=>{
-            //console.log("parsing took ", ((new Date()) - start)/1000," seconds");
+            //console.log("Parsing data took ", ((new Date()) - start)/1000," seconds");
             return theParsedData;
         });
         
         //or use demo data from irisCSVData
-        // parsedData.rows = d3.csvParse(irisCSVData);
+        //parsedData.rows = d3.csvParse(irisCSVData); 
 
 
         //get layout options
-        let layout = await plotlyParser.layout(dataView, parsedData.rows, preferences)
+        let layout = await plotlyParser.layout(dataView, parsedData.rows, preferences, context);
 
- 
+
+        //merge default preferences with plotly options
         let options = {
          colorScale:parsedData.colorScale,
          colors:parsedData.colors,
          fontColor:context.styling.general.font.color,
          fontFamily:context.styling.general.font.fontFamily,
-         fontSize:context.styling.general.font.fontSize,
+         fontSize:context.styling.scales.font.fontSize,
          paper_bgcolor:context.styling.general.backgroundColor,
          plot_bgcolor:context.styling.general.backgroundColor,
          dimensions:layout.dimentions,
@@ -141,49 +154,33 @@ Spotfire.initialize(async (mod) => {
          ...preferences
      }
 
-       //measure performance
-       start = new Date();
 
-       
-       
+
 
        //render the plot
-        plotlySplom(parsedData.rows, options);
+        //start = new Date(); //for benchmarking
+        plotlySplom(parsedData.rows, options, windowSize, context); 
         //end parsing data and measuring performance
         //console.log("rendering took ", ((new Date()) - start)/1000," seconds");
 
 
-        //tooltips and gui stuff
-        plotlyGUI.setTooltips(mod);
+        //tooltips and gui settings dialog 
+        let colorAxisParts = (await mod.visualization.axis("Color")).parts;
+        let measureAxisParts = (await mod.visualization.axis("Measures")).parts;
+
+        plotlyGUI.setTooltips(mod,colorAxisParts,measureAxisParts); //markers tooltips
         let font = {size:context.styling.general.font.fontSize,family:context.styling.general.font.fontFamily}
-        plotlyGUI.setConfiguration(mod,preferences,context.isEditing,font);
+        plotlyGUI.setConfiguration(mod,preferences,context.isEditing,font,plotlySettings);
+
 
         //enable spotfire marking (also check splom.plotly.js layout.dragmode.select for plotly marking mode)
         //plotlyGUI.setMarking(dataView,parsedData.rows);
 
 
-     /*shows a popover TEST*/
-    //  document.getElementById("testpopout").onclick= x=>{
-    //      let { radioButton, checkbox, button } = mod.controls.popout.components
-    //      let { section } = mod.controls.popout
-    //      let b1 = radioButton({ enabled: true, name: "myRadio", text: "a radio" })
-    //      let b2 = checkbox({ enabled: true, name: "myChk", text: "a checkbox", checked: true })
-    //      let b3 = button({ enabled: true, name: "myBtn", text: "a button" })
-    //      mod.controls.popout.show({x: 10, y: 10, autoClose: !true}, () => [
-    //          section({ heading: "section A", children: [b1, b2] }),
-    //          section({ heading: "section B", children: [b3, b3] }) 
-    //         ]);
-    // }
-            
-        // console.log(context.styling.general.font.fontFamily) 
-        // console.log(context.styling.general.font.fontSize) 
-
-
         /**
          * Signal that the mod is ready for export.
          */
-        context.signalRenderComplete(); 
-
-
+            mod.controls.errorOverlay.hide(); 
+            context.signalRenderComplete(); 
     }
 });

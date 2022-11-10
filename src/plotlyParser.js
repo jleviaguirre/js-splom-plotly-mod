@@ -1,12 +1,17 @@
 let unpack = (rows, key) => { return rows.map(function(row) { return row[key.replace('.',' ')]; });}
-let axis = (preferences) => {
-        return {
+let axis = (preferences,context) => ({
         showline:preferences.showAxisLines,
         zeroline:false,
-        gridcolor:preferences.gridLinesColor,
-        ticklen:4
-        // tickangle:45
-}}
+        gridcolor:preferences.showGridlines?context.styling.general.font.color+"55":context.styling.general.backgroundColor,
+        linecolor:context.styling.general.font.color+"55",
+        ticklen:2,
+        tickfont:{
+                size:context.styling.scales.font.fontSize, 
+                family:context.styling.scales.font.fontFamily, 
+                color:context.styling.scales.font.color
+        },
+        // rangeslider:{autorange:true, thickness:.025}
+})
 
 
 export const plotlyParser = {
@@ -16,9 +21,6 @@ export const plotlyParser = {
                 //get Color axis
                 let colorAxis = (await dataView.axes()).filter(ax=>{return ax.name=="Color"})[0];
 
-               //console.log(colorAxis.length);
-
-                
                 // get row values
                 let arr= (await dataView.allRows()).map((row)=>[
                         colorAxis.isCategorical?
@@ -37,7 +39,7 @@ export const plotlyParser = {
                 let colors=[]
                 let colorDict = {};
 
-                const xHierarchy = await dataView.hierarchy("Dimensions");
+                const xHierarchy = await dataView.hierarchy("Measures");
                 const cols =  xHierarchy.levels.map(x=>{return x.name} )
                 cols.shift(); //removes the rowid
                 cols.push("class");//adds color
@@ -66,7 +68,7 @@ export const plotlyParser = {
                                         colors.push(hex);
 
                                         //data
-                                        let r = row.categorical("Dimensions").formattedValue("|").split("|") 
+                                        let r = row.categorical("Measures").formattedValue("|").split("|") 
                                         if(dataViewAxes.find(anAxis=>anAxis.name=="Color")) r.push(row.categorical("Color").formattedValue()); //add color
                                         r.shift() //remove the rowid from the parsed data
                                         r.forEach((v,i)=>{
@@ -78,7 +80,6 @@ export const plotlyParser = {
                 }
 
 
-                // console.log(colorDict)
                 colorDict=Object.keys(colorDict);
                 let colorScale=[];
                 colorDict.forEach((x,i)=>{colorScale.push([(1/colorDict.length)*i,x]);colorScale.push([(1/colorDict.length)*(i+1),x])});
@@ -90,10 +91,10 @@ export const plotlyParser = {
                 return ({rows:outputData,colors:colors,colorScale:colorScale})
         },
 
-        layout:async function(dataView,rows,preferences){
+        layout:async function(dataView,rows,preferences,context){
 
                 //dimensions
-                const xHierarchy = await dataView.hierarchy("Dimensions");
+                const xHierarchy = await dataView.hierarchy("Measures");
                 const cols =  xHierarchy.levels.map(x=>{return x.name} )
                 const dimentions =  cols.map(x=>{return {label:x, values:unpack(rows,x)}})
                 dimentions.shift()
@@ -102,8 +103,8 @@ export const plotlyParser = {
                 let axes = {}
         
                 dimentions.forEach((e,i)=>{
-                        axes["xaxis"+(i==0?"":i+1)] = axis(preferences);
-                        axes["yaxis"+(i==0?"":i+1)] = axis(preferences)
+                        axes["xaxis"+(i==0?"":i+1)] = axis(preferences,context);
+                        axes["yaxis"+(i==0?"":i+1)] = axis(preferences,context)
                 })
 
                 return {dimentions:dimentions, axes:axes}
