@@ -22,7 +22,7 @@ import {plotlyGUI} from "./plotlyGUI";
  */
 Spotfire.initialize(async (mod) => {
 
-console.clear();
+// console.clear();
 
     const reader = mod.createReader(
         mod.visualization.data(), 
@@ -78,8 +78,7 @@ console.clear();
 
        //1.c read mod property
        plotlySettingsValue = (await mod.property("plotlySettings")).value();
-       console.log("►",plotlySettingsValue);
-       let preferences = JSON.parse(plotlySettingsValue.toString())||defaultPreferences;
+       let preferences = JSON.parse(plotlySettingsValue.toString()) || defaultPreferences;
 
 
        //1.d reset aggregation warning message 

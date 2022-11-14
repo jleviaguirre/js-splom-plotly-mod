@@ -3,7 +3,7 @@ const path = require("path");
 const CopyPlugin = require("copy-webpack-plugin");
  
 module.exports = {
-    mode: "development",
+    mode: "production",
     entry: './src/main.js',
     output: {
         path: path.join(__dirname, 'dist'),
@@ -24,6 +24,6 @@ module.exports = {
     plugins: [
         new CopyPlugin({ patterns: [{ from: "static" }] })
     ],
-    devtool: "inline-source-map"
+    // devtool: "inline-source-map"
 };
 
