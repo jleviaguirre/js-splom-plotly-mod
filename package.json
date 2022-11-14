@@ -8,7 +8,16 @@
         "build-watch": "webpack --watch",
         "start": "npm run build-watch"
     },
-    "keywords": ["scatter plot", "spom chart", "scatter matrix", "correlation", "data science", "analytics", "visualization", "plotly"],
+    "keywords": [
+        "scatter plot",
+        "spom chart",
+        "scatter matrix",
+        "correlation",
+        "data science",
+        "analytics",
+        "visualization",
+        "plotly"
+    ],
     "author": "Jose Leviaguirre",
     "license": "ISC",
     "devDependencies": {
@@ -20,6 +29,7 @@
         "@json-editor/json-editor": "^2.9.0-beta.0",
         "copy-webpack-plugin": "^11.0.0",
         "d3": "^7.6.1",
+        "ify-loader": "^1.1.0",
         "plotly.js-dist": "2.14.0",
         "save-dev": "^0.0.1-security"
     }

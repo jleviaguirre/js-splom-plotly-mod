@@ -13,6 +13,8 @@ module.exports = {
       rules: [
         {
           exclude: /node_modules/,
+          test: /\.js$/,
+          loader: 'ify-loader'
         }
       ]
     },

@@ -66,21 +66,23 @@ console.clear();
             xLabelRotation:0,
             yLabelRotation:0
         }
-       }  
+       }   
 
 
        //1.a read plot settings from mod property
        let plotlySettingsValue = (await mod.property("plotlySettings")).value();
        
        //1.b if mod property not set, set defaults (set ovveride to true just once to reset mod property to default)
-       let override = !true;
+       let override = false;
        if (override||plotlySettingsValue=="-") (await mod.property("plotlySettings")).set(JSON.stringify(defaultPreferences)); 
 
        //1.c read mod property
        plotlySettingsValue = (await mod.property("plotlySettings")).value();
-       let preferences = JSON.parse(plotlySettingsValue.toString());
+       console.log("►",plotlySettingsValue);
+       let preferences = JSON.parse(plotlySettingsValue.toString())||defaultPreferences;
 
-       //1.d reset aggregation warning message
+
+       //1.d reset aggregation warning message 
        if(override) useCustomRowIdentifierExpression.set(false)
 
 
