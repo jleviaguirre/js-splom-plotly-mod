@@ -55,9 +55,9 @@ export function plotlySplom(rows, options, windowSize, context){
       color:context.styling.scales.font.color
     },
     autosize: false,
-    hovermode:'closest',
-    dragmode:false, //"select" activates marking | false disables marking
-    // dragmode:"select", //"zoom" | "pan" | "select" | "lasso" | "drawclosedpath" | "drawopenpath" | "drawline" | "drawrect" | "drawcircle" | "orbit" | "turntable" | false
+    hovermode:'closest', 
+    // dragmode:false, //"select" activates marking | false disables marking
+    dragmode:"select", //"zoom" | "pan" | "select" | "lasso" | "drawclosedpath" | "drawopenpath" | "drawline" | "drawrect" | "drawcircle" | "orbit" | "turntable" | false
     // font:{color:options.fontColor, family:options.fontFamily, size:options.fontSize},
     
     paper_bgcolor:options.paper_bgcolor,

@@ -262,45 +262,40 @@ export const plotlyGUI = {
 
         },
 
-        setMarking:  (dataView, rows)=>{ //return; //disable marking for now
+        setMarking:  (rows)=>{ //return; //disable marking for now
                 //do marking
-                let plotDiv = document.getElementById("plotly_plot")
-                plotDiv.on('plotly_selected', async (eventData) => {
+                //change marking to look and feel to suit spotfire
+                //you can force these settings via css !important
+                //to hide plotly marking layer after selecting, add to css: .selectionlayer, rect.cursor-ew-resize,rect.cursor-ns-resize  {display: none;}
+                // let selectBox = document.querySelector('.select-outline')
+                // selectBox.style.fill="#4a64cd42";
+                // selectBox.style.stroke = "black"
+                // selectBox.style.strokeDasharray=0;
 
-                        //change marking to look and feel to suit spotfire
-                        //you can force these settings via css !important
-                        //to hide plotly marking layer after selecting, add to css: .selectionlayer, rect.cursor-ew-resize,rect.cursor-ns-resize  {display: none;}
-                        // let selectBox = document.querySelector('.select-outline')
-                        // selectBox.style.fill="#4a64cd42";
-                        // selectBox.style.stroke = "black"
-                        // selectBox.style.strokeDasharray=0;
+        
+                let plotDiv = document.getElementById("plotly_plot"); 
+                let markOperation; // Add | Intersect | Replace | Toggle | ToggleOrAdd
 
-                        //perform the actual marking
-                        (await dataView.allRows()).forEach((row,i)=>{
-                                let aRow = row.categorical("Measures")
-                                let rowVal = aRow.value()[0].key
-                                // console.log("dv",row, rowVal)
-                                
-                                // console.log("plotly marked", eventData?.points)
-                                if( eventData?.points && eventData.points.findIndex(pt=>{
-                                        //debug
-                                        let r = row.categorical("Measures").formattedValue("|")//.split("|") 
-                                        if(rowVal==pt.pointIndex){
-                                                // console.log(x, aRow)
-                                                console.log("dv",row, rowVal, r)
-                                                console.log("ply",pt, pt.pointIndex)
-                                        }
-
-                                        return rowVal==pt.pointIndex
-                                }) > -1) row.mark()
-                                //if(d.category==rowVal) row.mark();
-
-
-                        })
+                plotDiv.addEventListener("mousedown",function(ev){
+                        markOperation = ev.shiftKey?"Add":
+                //         // ev.ctrlKey?"Toggle":
+                //         ev.altKey?"Toggle": //supposed to be freehand
+                        "";
+                //         const Plotly = require('plotly.js-dist');
+                //         if (ev.altKey)  Plotly.relayout(plotDiv, 'dragmode', 'lasso');
                         
-
+                        console.log(markOperation)
+ 
                 })
 
+                plotDiv.on('plotly_selected', async (eventData) => {
+                        eventData?.points && eventData.points.findIndex(pt=>{
+
+                        //set operation depending on keyboard      
+                        console.log(213,markOperation)
+                        rows[pt.pointIndex].mark(markOperation);    
+                        });    
+                });        
         }, 
 
                 /**

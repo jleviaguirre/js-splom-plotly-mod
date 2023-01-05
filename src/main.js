@@ -175,7 +175,13 @@ Spotfire.initialize(async (mod) => {
 
 
         //enable spotfire marking (also check splom.plotly.js layout.dragmode.select for plotly marking mode)
-        //plotlyGUI.setMarking(dataView,parsedData.rows);
+        let rows =  (await dataView.allRows());
+        plotlyGUI.setMarking(rows);
+
+
+
+
+
 
 
         /**
