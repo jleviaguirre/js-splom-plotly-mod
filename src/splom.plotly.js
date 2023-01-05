@@ -12,17 +12,6 @@ export function plotlySplom(rows, options, windowSize, context){
 
   let pl_colorscale = options.colorScale
 
-  for (let i=0; i < unpack(rows, 'class').length; i++) {
-    if (unpack(rows, 'class')[i] == "Iris-setosa") {
-      colors.push(0) 
-    } else if (unpack(rows, 'class')[i] == "Iris-versicolor") {
-      colors.push(0.5)
-    } else if (unpack(rows, 'class')[i] == "Iris-virginica") {
-      colors.push(1)
-    }
-  }  
-
-
   var data = [{
     type: 'splom',
     dimensions: options.dimensions,
@@ -65,6 +54,8 @@ export function plotlySplom(rows, options, windowSize, context){
 
     ...options.axes,
   }
+
+  console.log(data,layout)
 
 const Plotly = require('plotly.js-dist');
 Plotly.purge("plotly_plot")

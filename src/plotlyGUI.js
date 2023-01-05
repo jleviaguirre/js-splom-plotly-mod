@@ -276,15 +276,22 @@ export const plotlyGUI = {
                 let plotDiv = document.getElementById("plotly_plot"); 
                 let markOperation; // Add | Intersect | Replace | Toggle | ToggleOrAdd
 
+                
+                plotDiv.on('plotly_click', function(data){
+                        rows[data.points[0]?.pointIndex].mark(markOperation);    
+                        // console.log("click ", markOperation)
+                    });
+
+
                 plotDiv.addEventListener("mousedown",function(ev){
                         markOperation = ev.shiftKey?"Add":
-                //         // ev.ctrlKey?"Toggle":
+                        ev.ctrlKey?"Toggle":
                 //         ev.altKey?"Toggle": //supposed to be freehand
                         "";
+
                 //         const Plotly = require('plotly.js-dist');
                 //         if (ev.altKey)  Plotly.relayout(plotDiv, 'dragmode', 'lasso');
                         
-                        console.log(markOperation)
  
                 })
 
@@ -292,7 +299,6 @@ export const plotlyGUI = {
                         eventData?.points && eventData.points.findIndex(pt=>{
 
                         //set operation depending on keyboard      
-                        console.log(213,markOperation)
                         rows[pt.pointIndex].mark(markOperation);    
                         });    
                 });        
@@ -366,7 +372,7 @@ export const plotlyGUI = {
                                 axis.setExpression("<baserowid()>");
                         } else {
                                 axis.parts.unshift({displayName:"(Row Number)", expression:"baserowid()"}) 
-                                console.log(axis.parts.map(x=>{return x.displayName}));//CACA
+                                // console.log(axis.parts.map(x=>{return x.displayName}));//CACA
                                 let newExpression = axis.parts.map(p=>{return p.expression}).join(" NEST ");
                                 axis.setExpression(`<${newExpression}>`);
                         }
