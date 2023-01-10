@@ -5,6 +5,7 @@ let axis = (preferences,context,xy) => ({
         gridcolor:preferences.showGridlines?context.styling.general.font.color+"55":context.styling.general.backgroundColor,
         linecolor:context.styling.general.font.color+"55",
         automargin:"height+width",
+        fixedrange:true,
         tickangle:preferences.labels.orientation=="Perpendicular"?xy=="X"?(-90):(0):xy=="X"?(0):(-90),
         ticklen:4,
                 // rangeslider:true,
@@ -113,17 +114,19 @@ export const plotlyParser = {
                 const xHierarchy = await dataView.hierarchy("Measures");
                 const columns =  xHierarchy.levels.map(x=>{return x.name} );
 
-                console.log(context.styling.scales.font.fontSize,windowSize, windowSize.width, columns.length-1, windowSize.width / (columns.length-1));
                 const dimentions =  columns.map(dimention=>{
 
                         //do math between visualization width, font pixel size to determine max text width (TODO)
-                        let fontWidthScaleFactor = .8; //fontSize is the height, not with of the text. Width is often smaller.
+                        let fontScaleFactor = .8; //fontSize is the height, not with of the text. Width is often smaller.
                         let aLabel = dimention;
                         let maxWidth = windowSize.width / (columns.length-1); //this is the approx width per chart
-                        let maxChars = maxWidth / context.styling.scales.font.fontSize * fontWidthScaleFactor;
+                        let maxWChars = maxWidth / context.styling.scales.font.fontSize * fontScaleFactor;
+                        let maxHeight = windowSize.height / (columns.length-1); //this is the approx height per chart
+                        let maxHChars = maxHeight / context.styling.scales.font.fontSize * fontScaleFactor;
 
                         //trim if label too long
-                        if(aLabel.length > maxChars) aLabel=dimention.slice(0,maxChars) + "...";
+                        if(aLabel.length > maxWChars) aLabel=dimention.slice(0,maxWChars) + "...";
+                        if(aLabel.length > maxHChars) aLabel=dimention.slice(0,maxHChars) + "...";
 
                         return {label:aLabel, values:unpack(rows,dimention)}
                 })

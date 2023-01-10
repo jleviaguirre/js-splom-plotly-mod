@@ -96,7 +96,6 @@ export const plotlyGUI = {
                 //1.1 replace plotly icon from toolbar link with gear
                 const btnModConfig = `
                 <a rel="tooltip" 
-                onclick="showConfigDialog()"
                 id="btnModConfig"
                 class="modebar-btn" 
                 tooltip="Splom settings" 
@@ -111,7 +110,10 @@ export const plotlyGUI = {
                 document.querySelector(".modebar-group:last-child").innerHTML = isEditing?btnModConfig  :"";
 
                 //1.3 make the config dialog icon show config dialog when clicked
-                if (isEditing) document.getElementById("btnModConfig").onclick = function(){document.getElementById("configDialog").hidden = false;}
+                if (isEditing) document.getElementById("btnModConfig").onclick = function(ev){
+                        document.getElementById("configDialog").hidden = false;
+                        ev.stopPropagation();
+                }
 
 
                 //1.4 show config dialog
@@ -291,6 +293,13 @@ export const plotlyGUI = {
 
                 //hide title elements from json-editor
                 [...document.querySelectorAll(".card-title")].forEach(x=>{x.hidden=true});
+
+                //hide config dialog when clicking outside of it
+
+                let myPlot = document.getElementById("plotly_plot");
+                myPlot.addEventListener("mousedown",(ev)=>{
+                        document.getElementById("configDialog").hidden = true;
+                })
 
 
                 //2. render form
