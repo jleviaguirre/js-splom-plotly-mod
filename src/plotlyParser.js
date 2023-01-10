@@ -1,10 +1,26 @@
 let unpack = (rows, key) => { return rows.map(function(row) { return row[key.replace('.',' ')]; });}
-let axis = (preferences,context) => ({
+let axis = (preferences,context,xy) => ({
         showline:preferences.showAxisLines,
         zeroline:false,
         gridcolor:preferences.showGridlines?context.styling.general.font.color+"55":context.styling.general.backgroundColor,
         linecolor:context.styling.general.font.color+"55",
-        ticklen:2,
+        automargin:"height+width",
+        tickangle:preferences.labels.orientation=="Perpendicular"?xy=="X"?(-90):(0):xy=="X"?(0):(-90),
+        ticklen:4,
+                // rangeslider:true,
+                // rangeslider:{
+                //         thickness:.005,
+                //         bgcolor:context.styling.general.font.color+"55"
+                // },
+                // rangeselector:{
+                //         visible:true,
+                //         buttons:[{label:"caca"}],
+                //         bgcolor:"#FF0000"
+                // },
+        visible:preferences.labels.showLabels,
+        tickcolor:context.styling.general.font.color+"55",
+        // title:{standoff:50}, //◄ increase when rotating orthogonal titles. Check plotlyGUI.js label rotation css rules
+        automargin:"true",
         tickfont:{
                 size:context.styling.scales.font.fontSize, 
                 family:context.styling.scales.font.fontFamily, 
@@ -91,20 +107,34 @@ export const plotlyParser = {
                 return ({rows:outputData,colors:colors,colorScale:colorScale})
         },
 
-        layout:async function(dataView,rows,preferences,context){
+        layout:async function(dataView,rows,preferences,context, windowSize){
 
                 //dimensions
                 const xHierarchy = await dataView.hierarchy("Measures");
-                const cols =  xHierarchy.levels.map(x=>{return x.name} )
-                const dimentions =  cols.map(x=>{return {label:x, values:unpack(rows,x)}})
-                dimentions.shift()
+                const columns =  xHierarchy.levels.map(x=>{return x.name} );
+
+                console.log(context.styling.scales.font.fontSize,windowSize, windowSize.width, columns.length-1, windowSize.width / (columns.length-1));
+                const dimentions =  columns.map(dimention=>{
+
+                        //do math between visualization width, font pixel size to determine max text width (TODO)
+                        let fontWidthScaleFactor = .8; //fontSize is the height, not with of the text. Width is often smaller.
+                        let aLabel = dimention;
+                        let maxWidth = windowSize.width / (columns.length-1); //this is the approx width per chart
+                        let maxChars = maxWidth / context.styling.scales.font.fontSize * fontWidthScaleFactor;
+
+                        //trim if label too long
+                        if(aLabel.length > maxChars) aLabel=dimention.slice(0,maxChars) + "...";
+
+                        return {label:aLabel, values:unpack(rows,dimention)}
+                })
+                dimentions.shift();//remove first column, which is the (row number)
 
                 //axes
-                let axes = {}
+                let axes = {} 
         
                 dimentions.forEach((e,i)=>{
-                        axes["xaxis"+(i==0?"":i+1)] = axis(preferences,context);
-                        axes["yaxis"+(i==0?"":i+1)] = axis(preferences,context)
+                        axes["xaxis"+(i==0?"":i+1)] = axis(preferences,context,"X");
+                        axes["yaxis"+(i==0?"":i+1)] = axis(preferences,context,"Y")
                 })
 
                 return {dimentions:dimentions, axes:axes}

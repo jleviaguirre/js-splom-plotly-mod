@@ -36,7 +36,7 @@
                 "placement":"bottom" ,  
                 "dropTarget": {
                     "icon": "XAxis3D",
-                    "description": "Use {0} for the mod's measures"
+                    "description": "Use {0} for the mod's measures" 
                 }
             }
         ]
@@ -45,6 +45,6 @@
         "index.html",
         "main.css",
         "bundle.js",
-        "bootstrap.4.1.2.css",
-        "select_columns.png"    ]
+        "bootstrap.4.1.2.css"
+    ]
 }

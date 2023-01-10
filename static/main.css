@@ -18,7 +18,7 @@ body{
 }
 
 .configIcon svg:hover{
-    fill:rgba(68, 68, 68, 0.7)
+    fill:rgba(68, 68, 68, 0.7);
 }
 
 
@@ -265,5 +265,4 @@ padding: 0 1em 1em 1em; */
     z-index: 1;
     content: attr(tooltip);
 }
-
 

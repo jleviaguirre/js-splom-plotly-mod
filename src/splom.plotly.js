@@ -25,7 +25,7 @@ export function plotlySplom(rows, options, windowSize, context){
       size: options.marker.size * (window.innerHeight * window.innerWidth)/(1024*768), //dynamic marker size 
       line: {
         color: options.marker.color,
-        width: options.marker.width
+        width: options.marker.width,
       }
     }
   }]
@@ -44,18 +44,19 @@ export function plotlySplom(rows, options, windowSize, context){
       color:context.styling.scales.font.color
     },
     autosize: false,
-    hovermode:'closest', 
+    hovermode:"closest", //"x" | "y" | "closest" | false | "x unified" | "y unified"  
     // dragmode:false, //"select" activates marking | false disables marking
     dragmode:"select", //"zoom" | "pan" | "select" | "lasso" | "drawclosedpath" | "drawopenpath" | "drawline" | "drawrect" | "drawcircle" | "orbit" | "turntable" | false
     // font:{color:options.fontColor, family:options.fontFamily, size:options.fontSize},
     
     paper_bgcolor:options.paper_bgcolor,
     plot_bgcolor:options.paper_bgcolor,
+    
+    ...options.axes, // see plotlyParser.js:2
 
-    ...options.axes,
+
+    
   }
-
-  console.log(data,layout)
 
 const Plotly = require('plotly.js-dist');
 Plotly.purge("plotly_plot")

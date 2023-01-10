@@ -14,23 +14,78 @@ export const plotlyGUI = {
 
         //from this point on, move to another file called plotlyGUI.js
         
-        setTooltips:function(mod, colorAxisParts, measureAxisParts){
+        setTooltips:function(mod, colorAxisParts, measureAxisParts, preferences, columns, context){
                 //plotly is rendered in plotly_plot, so add spotfire-like tooltips
 
                 let myPlot = document.getElementById("plotly_plot");
                 myPlot.on('plotly_hover', function(e){
-                        let p = e.points[0]
+                        let p = e.points[0];
 
-                        mod.controls.tooltip.show(
-                                measureAxisParts[0].displayName+":"+(p.pointIndex+1)+"\n"+
-                                _makeTT(colorAxisParts,p.text)+"\n"+
-                                "x:"+p.x+"\n"+
-                                "y:"+p.y
-                        )
+                        //show values names and values or visualization properties and vlues
+                        let isValueNamesandValues = preferences.tooltips.valueNames =="Value names and values";
+                        let x = (isValueNamesandValues?p.xaxis.title.text:"x")+":";
+                        let y = (isValueNamesandValues?p.yaxis.title.text:"y")+":";
+
+                        let ttip = (preferences.tooltips.id?measureAxisParts[0].displayName+":"+(p.pointIndex+1)+"\n":"")+
+                        (preferences.tooltips.color?_makeTT(colorAxisParts,p.text)+"\n":"")+
+                        (preferences.tooltips.x?x+p.x+"\n":"")+
+                        (preferences.tooltips.y?y+p.y:"");
+
+                        mod.controls.tooltip.show(ttip);
+
                 });
                 myPlot.on('plotly_unhover', function(e){
                         mod.controls.tooltip.hide() 
                 });
+                
+                
+                
+                //nasty hack to add tooltips to axis titles. The general approach is to 
+                //create transparent dom elements on top of each title to later add hovering events
+                //1. create div elements on top of each title. Luckily, plotly hold title label positions from attr
+                document.querySelectorAll(".infolayer g text").forEach((el,i) =>{
+
+                        //console.log(columns,columns.length-1);
+                        var ttip = columns[i%(columns.length-1)+1];
+                        let width = context.styling.scales.font.fontSize * el.textContent.length;
+                        let height = context.styling.scales.font.fontSize;
+                        let offsetx = width/4;
+                        let offsety = context.styling.scales.font.fontSize;
+                        let x = (el.getAttribute("x")-offsetx);
+                        let y = (el.getAttribute("y")-offsety);
+                        
+                        let aSpan = document.createElement("div");
+                        aSpan.style.position="fixed";
+                        aSpan.style.left=x+"px";
+                        aSpan.style.top=y+"px";
+                        aSpan.style.width = width+"px";
+                        aSpan.style.height = height+"px";
+                        aSpan.style.padding = offsety+"px";
+                        
+                        //rotate titles on y axis
+                        let isYAxis = i>(columns.length+2)/2;
+                        if(isYAxis){
+                                let y = (el.getAttribute("y")-width/4);
+                                aSpan.style.left=offsety*2+"px";
+                                aSpan.style.top=y-offsetx+"px";
+                                aSpan.style.width = height+"px";
+                                aSpan.style.height = width+"px";
+                                aSpan.style.transformOrigin="center"; 
+                        }
+                        
+                        document.body.append(aSpan);
+                        
+                        
+                        aSpan.addEventListener("mouseover",function(){
+                                mod.controls.tooltip.show(ttip)
+                        });
+                        aSpan.onmouseout = mod.controls.tooltip.hide
+
+
+                })
+        
+        
+
         },
 
         setConfiguration:async function(mod, preferences, isEditing,font,plotlySettings){  
@@ -62,6 +117,7 @@ export const plotlyGUI = {
                 //1.4 show config dialog
                 //this is the dialog, thanks to the amazing json editor
                 //documentation: https://github.com/json-editor/json-editor
+                //to add more properties, add the properties in main.js and reset the override variable to true (once)
                 var options = {
                         theme: "bootstrap3",
                         iconlib: "fontawesome5",
@@ -151,13 +207,14 @@ export const plotlyGUI = {
                                                 title:"Labels",
                                                 properties:{
                                                         fontSize:{
-                                                                type: "integer",
                                                                 options: {"hidden": true},
+                                                                type: "integer",
                                                                 format: "range",
                                                                 title:"Font size (px) (0 for default)",
                                                                 default: preferences.labels.fontSize
                                                         },
                                                         xLabelRotation:{
+                                                                options: {"hidden": true},
                                                                 type: "integer",
                                                                 format: "range",
                                                                 title:"Horizontal labels rotation (deg)",
@@ -166,12 +223,64 @@ export const plotlyGUI = {
                                                                 default: preferences.labels.xLabelRotation
                                                         },
                                                         yLabelRotation:{
+                                                                options: {"hidden": true},
                                                                 type: "integer",
                                                                 format: "range",
                                                                 title:"Vertical labels rotation (deg)",
                                                                 minimum:-180,
                                                                 maximum:180,
                                                                 default: preferences.labels.yLabelRotation
+                                                        },
+                                                        showLabels:{
+                                                                type: "boolean",
+                                                                format: "checkbox",
+                                                                title:" Show labels",
+                                                                default: preferences.labels.showLabels //used in plotlyParser.js:2
+                                                        },
+                                                        orientation:{
+                                                                type: "string", 
+                                                                format: "radio",
+                                                                title: " ",
+                                                                enum: ["Parallel","Perpendicular"],
+                                                                default: preferences.labels.orientation
+                                                        }
+
+                                                }
+                                        },
+                                        tooltips:{
+                                                type:"object",
+                                                title:"Tooltips",
+                                                properties:{
+                                                        id:{
+                                                                type: "boolean",
+                                                                format: "checkbox",
+                                                                title: " Marker by (row number)",
+                                                                default: preferences.tooltips.id
+                                                        },
+                                                        color:{
+                                                                type: "boolean",
+                                                                format: "checkbox",
+                                                                title: " Color by",
+                                                                default: preferences.tooltips.color
+                                                        },
+                                                        x:{
+                                                                type: "boolean",
+                                                                format: "checkbox",
+                                                                title: " X",
+                                                                default: preferences.tooltips.x
+                                                        },
+                                                        y:{
+                                                                type: "boolean",
+                                                                format: "checkbox",
+                                                                title: " Y",
+                                                                default: preferences.tooltips.y
+                                                        },
+                                                        valueNames:{
+                                                                type: "string", 
+                                                                format: "radio",
+                                                                title: "Tooltip Format:",
+                                                                enum: ["Value names and values","Visualization properties and values"],
+                                                                default: preferences.tooltips.valueNames
                                                         }
                                                 }
 
@@ -198,15 +307,19 @@ export const plotlyGUI = {
                 document.querySelectorAll("[role='tablist'] li")[lastTab].click();
 
                 //label rotations
+                let xDeg = preferences.labels.orientation=="Perpendicular"?-90:(0);
+                let yDeg = preferences.labels.orientation=="Perpendicular"?90:(0);
                 let css = `
-                .infolayer g[class*='g-x']{ transform: rotate(${preferences.labels.xLabelRotation}deg);}
-                .infolayer g[class*='g-y']{ transform: rotate(${preferences.labels.yLabelRotation}deg);}
+                // .infolayer g[class*='g-x']{ transform: rotate(${preferences.labels.xLabelRotation}deg);}
+                // .infolayer g[class*='g-y']{ transform: rotate(${preferences.labels.yLabelRotation}deg);}
+                // .infolayer g[class*='g-x']{ transform: rotate(${xDeg}deg);}
+                // .infolayer g[class*='g-y']{ transform: rotate(${yDeg}deg);}
                 #form{font-family:${font.family};font-size:${font.size}px;}
                 `;
 
                 document.getElementById("mod-container-style").innerHTML = css;
 
-                //add config tooltips
+                //add tooltips to configuration dialog
                 let helpIcon = `<a class="ttip"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather feather-help-circle"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></a>`
                 let tt1 = document.querySelector("label[for='root[isUpperHalfVisible]']");
                 tt1.insertAdjacentHTML("beforeend",helpIcon);
@@ -215,9 +328,6 @@ export const plotlyGUI = {
                 let tt2 = document.querySelector("label[for='root[isDiagonalVisible]']");
                 tt2.insertAdjacentHTML("beforeend",helpIcon);
                 tt2.lastChild.setAttribute("tooltip","Determines whether or not subplots on the diagonal are displayed");
-
-
-
 
 
                 //save function
@@ -230,60 +340,29 @@ export const plotlyGUI = {
 
                 }
                 
-                /*
-                //add ok and cancel buttons to form
-                let closeForm = function(){document.getElementById("configDialog").hidden=true}
-
-                let center = document.createElement("div")
-                center.style.textAlign="center";
-
-                let btnOK = document.createElement("button")
-                btnOK.innerHTML="OK"
-                btnOK.style.marginRight="10px";
-                btnOK.onclick = ()=>{saveForm();closeForm()}
-                
-                let btnCancel = document.createElement("button")
-                btnCancel.innerHTML="Cancel"
-                btnCancel.onclick=closeForm;
-                btnCancel.style.marginRight="10px";
-                
-                let btnApply = document.createElement("button")
-                btnApply.innerHTML="Apply"
-                btnApply.onclick = saveForm;
-
-                center.appendChild(btnOK)
-                center.appendChild(btnCancel)
-                center.appendChild(btnApply)
-                form.appendChild(center) 
-                */
-
                 //make editor auto apply changes
                 editor.on("change",saveForm);
 
         },
 
-        setMarking:  (rows)=>{ //return; //disable marking for now
+        setMarking:  (rows, dataView)=>{ //return; //disable marking for now
                 //do marking
-                //change marking to look and feel to suit spotfire
-                //you can force these settings via css !important
-                //to hide plotly marking layer after selecting, add to css: .selectionlayer, rect.cursor-ew-resize,rect.cursor-ns-resize  {display: none;}
-                // let selectBox = document.querySelector('.select-outline')
-                // selectBox.style.fill="#4a64cd42";
-                // selectBox.style.stroke = "black"
-                // selectBox.style.strokeDasharray=0;
-
         
                 let plotDiv = document.getElementById("plotly_plot"); 
                 let markOperation; // Add | Intersect | Replace | Toggle | ToggleOrAdd
 
                 
                 plotDiv.on('plotly_click', function(data){
+                        console.log("click5  ", markOperation, data.points)
                         rows[data.points[0]?.pointIndex].mark(markOperation);    
-                        // console.log("click ", markOperation)
                     });
 
+                plotDiv.onclick = function(ev){
+                        !ev.shiftKey && !ev.ctrlKey && dataView.clearMarking();
+                }; 
 
-                plotDiv.addEventListener("mousedown",function(ev){
+
+                plotDiv.addEventListener("mousedown",function(ev){ 
                         markOperation = ev.shiftKey?"Add":
                         ev.ctrlKey?"Toggle":
                 //         ev.altKey?"Toggle": //supposed to be freehand
@@ -299,7 +378,7 @@ export const plotlyGUI = {
                         eventData?.points && eventData.points.findIndex(pt=>{
 
                         //set operation depending on keyboard      
-                        rows[pt.pointIndex].mark(markOperation);    
+                        rows[pt.pointIndex].mark(markOperation);       
                         });    
                 });        
         }, 

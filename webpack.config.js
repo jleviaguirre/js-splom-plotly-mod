@@ -3,7 +3,7 @@ const path = require("path");
 const CopyPlugin = require("copy-webpack-plugin");
  
 module.exports = {
-    mode: "production",
+    mode: "development",
     entry: './src/main.js',
     output: {
         path: path.join(__dirname, 'dist'),
@@ -14,7 +14,9 @@ module.exports = {
         {
           exclude: /node_modules/,
           test: /\.js$/,
-          loader: 'ify-loader'
+          use: [
+            'ify-loader'
+            ]
         }
       ]
     },

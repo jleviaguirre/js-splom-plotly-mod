@@ -7,12 +7,9 @@
 //@ts-check - Get type warnings from the TypeScript language server. Remove if not wanted.
 
 //these two imports are for dev and hard coded stuff
-import * as d3 from "d3";  
-import {irisCSVData} from "./irisData";
-
 import {plotlySplom} from "./splom.plotly";
 import {plotlyParser} from "./plotlyParser"; 
-import {plotlyGUI} from "./plotlyGUI"; 
+import {plotlyGUI} from "./plotlyGUI";   
 
  
 
@@ -46,6 +43,8 @@ Spotfire.initialize(async (mod) => {
      */
     async function render(dataView, useCustomRowIdentifierExpression,plotlySettings, windowSize) {
 
+        // console.clear();
+
        //1. get default or saved preferences
        //default popout / plottly preferences for new visual instance
        //note! when adding new properties, make sure 1.b runs during development at least once to reset mod.property.plotlySettings
@@ -64,8 +63,17 @@ Spotfire.initialize(async (mod) => {
         labels:{
             fontSize:context.styling.scales.font.fontSize,
             xLabelRotation:0,
-            yLabelRotation:0
-        }
+            yLabelRotation:0,
+            showLabels:true,
+            orientation:"parallel"
+        },
+        tooltips:{
+            x:true,
+            y:true,
+            color:true,
+            id:true,
+            valueNames:"Value names and values"
+        } 
        }   
 
 
@@ -138,15 +146,15 @@ Spotfire.initialize(async (mod) => {
 
 
         //get layout options
-        let layout = await plotlyParser.layout(dataView, parsedData.rows, preferences, context);
+        let layout = await plotlyParser.layout(dataView, parsedData.rows, preferences, context, windowSize);
 
 
         //merge default preferences with plotly options
         let options = {
          colorScale:parsedData.colorScale,
          colors:parsedData.colors,
-         fontColor:context.styling.general.font.color,
-         fontFamily:context.styling.general.font.fontFamily,
+         fontColor:context.styling.scales.font.color,
+         fontFamily:context.styling.scales.font.fontFamily,
          fontSize:context.styling.scales.font.fontSize,
          paper_bgcolor:context.styling.general.backgroundColor,
          plot_bgcolor:context.styling.general.backgroundColor,
@@ -169,19 +177,19 @@ Spotfire.initialize(async (mod) => {
         let colorAxisParts = (await mod.visualization.axis("Color")).parts;
         let measureAxisParts = (await mod.visualization.axis("Measures")).parts;
 
-        plotlyGUI.setTooltips(mod,colorAxisParts,measureAxisParts); //markers tooltips
+
+        const xHierarchy = await dataView.hierarchy("Measures");
+        const columns =  xHierarchy.levels.map(x=>{return x.name} );
+
+        plotlyGUI.setTooltips(mod,colorAxisParts,measureAxisParts, preferences,columns,context); //markers tooltips
         let font = {size:context.styling.general.font.fontSize,family:context.styling.general.font.fontFamily}
         plotlyGUI.setConfiguration(mod,preferences,context.isEditing,font,plotlySettings);
 
 
         //enable spotfire marking (also check splom.plotly.js layout.dragmode.select for plotly marking mode)
         let rows =  (await dataView.allRows());
-        plotlyGUI.setMarking(rows);
-
-
-
-
-
+        dataView.categoricalAxis("Measures")
+        plotlyGUI.setMarking(rows,dataView);
 
 
         /**
