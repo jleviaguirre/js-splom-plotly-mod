@@ -53,6 +53,7 @@ export function plotlySplom(rows, options, windowSize, context){
     plot_bgcolor:options.paper_bgcolor,
     
     ...options.axes, // see plotlyParser.js:2
+    
 
 
     
