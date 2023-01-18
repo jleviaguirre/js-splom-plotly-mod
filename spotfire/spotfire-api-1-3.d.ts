@@ -146,7 +146,7 @@ export declare interface ContextMenu {
     /**
      * Shows a context menu with the specified `items`. The context menu closes when the user clicks one of the
      * items or outside the context menu.
-     * @param x - The horizontal pixel coordinate where to show the context menu.
+     * @param x - The Horizontal pixel coordinate where to show the context menu.
      * @param y - The vertical pixel coordinate where to show the context menu.
      * @param items - Defines the content of the context menu.
      * @returns A Promise that, when resolved, provides the {@link ContextMenuItem} that was clicked by the user,
@@ -1187,7 +1187,7 @@ export declare interface PopoutDialog {
  */
 export declare interface PopoutOptions {
     /**
-     * Specifies the horizontal pixel coordinate of the anchor point of the pop out dialog.
+     * Specifies the Horizontal pixel coordinate of the anchor point of the pop out dialog.
      *
      * The coordinate is specified relative to an origin in the top left corner of the Mod viewport.
      */

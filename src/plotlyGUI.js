@@ -33,6 +33,10 @@ export const plotlyGUI = {
 
                         mod.controls.tooltip.show(ttip);
 
+                        //let's try with "oob" tooltip by getting the dataViewRow as tooltip.show parameter
+                        //requires a 'rows' parameter
+                        // mod.controls.tooltip.show(rows[p.pointIndex+0]);
+
                 });
                 myPlot.on('plotly_unhover', function(e){
                         mod.controls.tooltip.hide() 
@@ -243,7 +247,7 @@ export const plotlyGUI = {
                                                                 type: "string", 
                                                                 format: "radio",
                                                                 title: " ",
-                                                                enum: ["Parallel","Perpendicular"],
+                                                                enum: ["Parallel","Horizontal"],
                                                                 default: preferences.labels.orientation
                                                         }
 
@@ -316,8 +320,8 @@ export const plotlyGUI = {
                 document.querySelectorAll("[role='tablist'] li")[lastTab].click();
 
                 //label rotations
-                let xDeg = preferences.labels.orientation=="Perpendicular"?-90:(0);
-                let yDeg = preferences.labels.orientation=="Perpendicular"?90:(0);
+                let xDeg = preferences.labels.orientation=="Horizontal"?-90:(0);
+                let yDeg = preferences.labels.orientation=="Horizontal"?90:(0);
                 let css = `
                 // .infolayer g[class*='g-x']{ transform: rotate(${preferences.labels.xLabelRotation}deg);}
                 // .infolayer g[class*='g-y']{ transform: rotate(${preferences.labels.yLabelRotation}deg);}

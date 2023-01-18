@@ -65,7 +65,7 @@ Spotfire.initialize(async (mod) => {
             xLabelRotation:0,
             yLabelRotation:0,
             showLabels:true,
-            orientation:"parallel"
+            orientation:"Horizontal"
         },
         tooltips:{
             x:true,
@@ -184,8 +184,8 @@ Spotfire.initialize(async (mod) => {
         plotlyGUI.setTooltips(mod,colorAxisParts,measureAxisParts, preferences,columns,context); //markers tooltips
         let font = {size:context.styling.general.font.fontSize,family:context.styling.general.font.fontFamily}
         plotlyGUI.setConfiguration(mod,preferences,context.isEditing,font,plotlySettings);
-
-
+        
+        
         //enable spotfire marking (also check splom.plotly.js layout.dragmode.select for plotly marking mode)
         let rows =  (await dataView.allRows());
         dataView.categoricalAxis("Measures")

@@ -6,7 +6,7 @@ let axis = (preferences,context,xy) => ({
         linecolor:context.styling.general.font.color+"55",
         automargin:"height+width",
         fixedrange:true,
-        tickangle:preferences.labels.orientation=="Perpendicular"?xy=="X"?(-90):(0):xy=="X"?(0):(-90),
+        tickangle:preferences.labels.orientation=="Horizontal"?xy=="X"?(-0):(0):xy=="X"?(0):(-90),
         ticklen:4,
                 // rangeslider:true,
                 // rangeslider:{

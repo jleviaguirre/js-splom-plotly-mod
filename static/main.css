@@ -141,6 +141,10 @@ padding: 0 1em 1em 1em; */
 }
 .zoombox-corners{display:none}
 
+.js-plotly-plot .plotly .cursor-pointer {
+    cursor: default !important;
+}
+
  
 /* warning dialog */
 #warningDialog {

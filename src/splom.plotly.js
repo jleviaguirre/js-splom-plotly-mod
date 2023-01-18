@@ -37,7 +37,13 @@ export function plotlySplom(rows, options, windowSize, context){
     height: windowSize.height,
     width: windowSize.width*1.05,
     showlegend:false,
-    margin:{t:0},
+    margin: {
+      l: 45,
+      b: 45,
+      r: 0,
+      t: 0,
+      pad: 0
+    },
     font:{
       size:context.styling.scales.font.fontSize, 
       family:context.styling.scales.font.fontFamily, 
