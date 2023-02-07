@@ -1,4 +1,4 @@
-let unpack = (rows, key) => { return rows.map(function(row) { return row[key.replace('.',' ')]; });}
+let unpack = (rows, key) => { return rows.map(function(row) { return row[key]; });}
 let axis = (preferences,context,xy) => ({
         showline:preferences.showAxisLines,
         zeroline:false,
@@ -65,7 +65,6 @@ export const plotlyParser = {
                 var i=0;
                 const dataViewAxes = await dataView.axes()
                 next(root, "");
-
         
                 //traverse the hierarchy
                 function next(node) {
@@ -85,11 +84,11 @@ export const plotlyParser = {
                                         colors.push(hex);
 
                                         //data
-                                        let r = row.categorical("Measures").formattedValue("|").split("|") 
+                                        let r = row.categorical("Measures").value().map(v=>{return v.value()});
                                         if(dataViewAxes.find(anAxis=>anAxis.name=="Color")) r.push(row.categorical("Color").formattedValue()); //add color
                                         r.shift() //remove the rowid from the parsed data
                                         r.forEach((v,i)=>{
-                                                aRow[cols[i]]=String(isNaN(v)?v:parseFloat(v));
+                                                aRow[cols[i]]=isNaN(v)?String(v):v;
                                         })
                                         return outputData.push(aRow)
                                 })
